@@ -1,0 +1,70 @@
+<template>
+	<view>
+		<myp-navbar :lefts="leftIcons" title="myp-list with loading" @leftAction="navLeftAction"></myp-navbar>
+		<myp-list ref="myp-list" :useLoading="true" :autoUpdate="true" @down="toLoadData" @up="toLoadData">
+			<myp-list-cell v-for="(item,idx) in items" :key="idx">
+				<view class="sltwo-item">
+					<text class="sltwo-item-text">{{item}}</text>
+				</view>
+			</myp-list-cell>
+		</myp-list>
+	</view>
+</template>
+
+<script>
+	import navHelper from '@/router/navHelper.js'
+	const rawItems = [1,2,3,4,5,6,7,8,9,10]
+	
+	export default {
+		mixins: [navHelper],
+		data() {
+			return {
+				items: []
+			}
+		},
+		methods: {
+			toLoadData() {
+				const ins = this.$refs['myp-list']
+				const cp = ins.mypCurrentPage
+				const that = this
+				setTimeout(()=>{
+					if (cp===1) {
+						that.items = rawItems
+						ins.mypEndSuccess(true)
+					} else {
+						const newItems = []
+						rawItems.forEach(val => {
+							newItems.push(val+(cp-1)*10)
+						})
+						this.items = this.items.concat(newItems)
+						if (cp >= 4) {
+							ins.mypEndSuccess(false)
+						} else {
+							ins.mypEndSuccess(true)
+						}
+					}
+				}, 300)
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import '@/mypUI/mypui.scss';
+	
+	.sltwo {
+		&-item {
+			width: 750rpx;
+			background-color: $myp-color-primary;
+			height: 240rpx;
+			justify-content: center;
+			align-items: center;
+			margin-bottom: 20rpx;
+			
+			&-text {
+				font-size: 46rpx;
+				color: #FFFFFF;
+			}
+		}
+	}
+</style>

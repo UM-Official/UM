@@ -1,0 +1,146 @@
+<template>
+	<view>
+		<myp-navbar title="自定义r/l" :lefts="leftIcons" @leftAction="navLeftAction"></myp-navbar>
+		<!-- #ifdef APP-NVUE -->
+		<list ref='myp-raw-list' :style="mypContentHeightStyle+'width:750rpx;'">
+			<myp-refresher-n ref="myp-refresher" scroller-ref="myp-raw-list" @refresh="toRefresh"></myp-refresher-n>
+			<cell v-for="(item,idx) in items" :key="idx">
+				<view class="raw-item">
+					<text class="raw-item-text">{{item}}</text>
+				</view>
+			</cell>
+			<myp-loader-n ref="myp-loader" :hasMore="hasMore" @loading="toLoad"></myp-loader-n>
+		</list>
+		<!-- #endif -->
+		<!-- #ifndef APP-NVUE -->
+		<myp-list ref="myp-list" @down="toLoadItems" @up="toLoadItems">
+			<view class="raw-item" v-for="(item,idx) in items" :key="idx">
+				<text class="raw-item-text">{{item}}</text>
+			</view>
+		</myp-list>
+		<!-- #endif -->
+	</view>
+</template>
+
+<script>
+	import contentBoxMixin from '@/mypUI/myp-mixin/contentBoxMixin.js'
+	import navHelper from '@/router/navHelper.js'
+	
+	const rawItems = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+	import {getPlatform} from '@/mypUI/utils/system.js'
+	
+	export default {
+		mixins: [navHelper, contentBoxMixin],
+		data() {
+			return {
+				items: rawItems,
+				// #ifdef APP-NVUE
+				hasMore: true,
+				currentPage: 1
+				// #endif
+			}
+		},
+		methods: {
+			// #ifdef APP-NVUE
+			toRefresh() {
+				const cp = 1
+				setTimeout(()=>{
+					this.items = rawItems
+					this.currentPage = 1
+					this.hasMore = true
+					this.$refs['myp-refresher'].cancel()
+				}, 300)
+			},
+			toLoad() {
+				if (!this.hasMore) {
+					console.log('没有更多辣')
+					const platform = getPlatform()
+					if (platform === 'ios') {
+						this.$refs['myp-loader'].cancel()
+					} else {
+						setTimeout(()=>{
+							this.$refs['myp-loader'].cancel()
+						}, 0)
+					}
+					return
+				}
+				const cp = this.currentPage + 1
+				setTimeout(()=>{
+					if (cp === 1) {
+						this.items = rawItems
+						this.currentPage = 1
+						this.hasMore = true
+						this.$refs['myp-loader'].cancel()
+					} else {
+						const newItems = []
+						rawItems.forEach(val => {
+							newItems.push(val+(cp-1)*10)
+						})
+						this.items = this.items.concat(newItems)
+						this.currentPage = cp
+						this.$refs['myp-loader'].cancel()
+						if (cp >= 4) {
+							this.hasMore = false
+						} else {
+							this.hasMore = true
+						}
+					}
+				}, 300)
+			},
+			// #endif
+			toLoadItems() {
+				const ins = this.$refs['myp-list']
+				const cp = ins.mypCurrentPage
+				setTimeout(()=>{
+					if (cp === 1) {
+						this.items = rawItems
+						ins.mypEndSuccess(true)
+					} else {
+						const newItems = []
+						rawItems.forEach(val => {
+							newItems.push(val+(cp-1)*10)
+						})
+						this.items = this.items.concat(newItems)
+						if (cp >= 4) {
+							ins.mypEndSuccess(false)
+						} else {
+							ins.mypEndSuccess(true)
+						}
+					}
+				}, 300)
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import '@/mypUI/mypui.scss';
+	
+	.raw {
+		&-item {
+			width: 750rpx;
+			background-color: $myp-color-primary;
+			height: 240rpx;
+			justify-content: center;
+			align-items: center;
+			margin-bottom: 20rpx;
+			
+			&-text {
+				font-size: 46rpx;
+				color: #FFFFFF;
+			}
+		}
+		&-refresh {
+			width: 750rpx;
+			height: 80rpx;
+			justify-content: center;
+			align-items: center;
+		}
+		&-loading {
+			width: 750rpx;
+			height: 80rpx;
+			justify-content: center;
+			align-items: center;
+		}
+	}
+</style>

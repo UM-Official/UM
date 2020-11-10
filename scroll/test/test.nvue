@@ -1,0 +1,48 @@
+<template>
+	<view>
+		<myp-navbar :lefts="leftIcons" title="测试入口" @leftAction="navLeftAction"></myp-navbar>
+		<myp-list-simple bgType="page">
+			<myp-list-cell>
+				<view style="height: 20rpx;"></view>
+			</myp-list-cell>
+			<myp-list-cell v-for="(item,idx) in items" :key="idx">
+				<myp-cell :icon="item.icon" :title="item.name" :value="item.desc" indicator="right" radius="none" border="bottom" height="ll" valueStyle="text-align:right;" boxStyle="padding-left:30rpx;padding-right:30rpx;" @cellClicked="toDetailScroll(item)"></myp-cell>
+			</myp-list-cell>
+		</myp-list-simple>
+	</view>
+</template>
+
+<script>
+	import navHelper from '@/router/navHelper.js'
+	
+	export default {
+		mixins: [navHelper],
+		data() {
+			return {
+				items: [
+					{name: 'list', page: 'scroll_list_top', icon: 'up', desc: '回到顶部'},
+					{name: '不封装list', page: 'scroll_raw', icon: 'class', desc: 'refresh/loading'},
+					{name: '不封装list', page: 'scroll_raw_one', icon: 'class', desc: 'r/l,内容不足一页'},
+					{name: '不封装list', page: 'scroll_custom', icon: 'topic', desc: '自定义refresh/loading'},
+					{name: '不封装list', page: 'scroll_custom_one', icon: 'topic', desc: '自定义r/l,不足一页'},
+					{name: '封装list', page: 'scroll_raw_wrap', icon: 'headphone', desc: 'refresh/loading'},
+					{name: '封装list', page: 'scroll_raw_one_wrap', icon: 'headphone', desc: 'r/l,内容不足一页'},
+					{name: '封装list', page: 'scroll_custom_wrap', icon: 'radio-button', desc: '自定义refresh/loading'},
+					{name: '封装list', page: 'scroll_custom_one_wrap', icon: 'radio-button', desc: '自定义r/l,不足一页'},
+					{name: '不封装list', page: 'scroll_load_more', icon: 'class', desc: 'loadMore'},
+					{name: '不封装list', page: 'scroll_load_more_one', icon: 'class', desc: 'loadMore,内容不足一页'},
+					{name: '封装list', page: 'scroll_load_more_wrap', icon: 'headphone', desc: 'loadMore'},
+					{name: '封装list', page: 'scroll_load_more_one_wrap', icon: 'headphone', desc: 'loadMore,内容不足一页'}
+				]
+			}
+		},
+		methods: {
+			toDetailScroll(val) {
+				this.navigateTo(val.page)
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+</style>

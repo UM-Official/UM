@@ -1,0 +1,58 @@
+<template>
+	<view>
+		<myp-navbar :lefts="leftIcons" title="各种scroll的适配" @leftAction="navLeftAction"></myp-navbar>
+		<myp-list-simple bgType="page">
+			<myp-list-cell>
+				<view style="height: 20rpx;"></view>
+			</myp-list-cell>
+			<myp-list-cell v-for="(item,idx) in items" :key="idx">
+				<myp-cell :icon="item.icon" :title="item.name" :value="item.desc" indicator="right" radius="none" border="bottom" height="ll" valueStyle="text-align:right;" boxStyle="padding-left:30rpx;padding-right:30rpx;" @cellClicked="toDetailScroll(item)"></myp-cell>
+			</myp-list-cell>
+		</myp-list-simple>
+		<myp-loading ref="myp-loading"></myp-loading>
+	</view>
+</template>
+
+<script>
+	import navHelper from '@/router/navHelper.js'
+	import loadingMixin from '@/mypUI/myp-mixin/loadingMixin.js'
+	
+	export default {
+		mixins: [navHelper, loadingMixin],
+		data() {
+			return {
+				items: [
+					{name: '实验室', page: 'scroll_test', icon: 'class', desc: '测试入口'},
+					{name: 'header-swiper', page: 'scroll_header', icon: 'headphone', desc: '简单header-swiper'},
+					{name: 'header-swiper', page: 'scroll_header_refresh', icon: 'headphone', desc: 'header-swiper，带下拉/上提'},
+					{name: 'chat-list', page: 'scroll_chat_list', icon: 'subject', desc: '聊天消息列表/下拉更多'},
+					{name: '横向scroll', page: 'scroll_h', icon: 'book', desc: '横向滚动scroll'},
+					{name: 'list', page: 'scroll_list_simple', icon: 'topic', desc: '简单list'},
+					{name: 'list', page: 'scroll_list_loading', icon: 'topic', desc: 'list，带下拉/上提'},
+					{name: 'list', page: 'scroll_list_more', icon: 'topic', desc: 'list，带下拉/loadmoreoffset'},
+					{name: 'waterfall', page: 'scroll_waterfall', icon: 'radio-button', desc: 'waterfall，带下拉/上提'},
+					{name: 'xBar', page: 'scroll_x_support', icon: 'teacher', desc: 'xBar安全区适配'}
+				]
+			}
+		},
+		methods: {
+			toDetailScroll(val) {
+				// #ifdef APP-NVUE
+				if (val.page === 'scroll_chat_list') {
+					this.mypShowLoading({needMask: true})
+					const that = this
+					uni.preloadPage({url: "/pages/scroll/chat_list", complete: ()=>{
+						that.navigateTo(val.page)
+						that.mypHideLoading()
+					}});
+					return
+				}
+				// #endif
+				this.navigateTo(val.page)
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+</style>

@@ -1,0 +1,221 @@
+<template>
+	<view class="big-page">
+		<!-- #ifdef APP-NVUE -->
+		<list :id="mypListId" :bounce="true" isSwiperList="true" style="width:750rpx;flex:1;" @scroll="handleParentScroll">
+			<cell>
+				<swiper-head></swiper-head>
+			</cell>
+			<cell>
+				<myp-tabs-h :value="currentTab" :items="tabs" :isTap="true" textLabel="name" activeTextType="primary" width="128rpx" indicatorType="primary" indicatorWidth="64rpx" scrollSize="750rpx" justify="center" @change="toChangeTab"></myp-tabs-h>
+			</cell>
+			<cell>
+				<myp-content-box :includeStatus="false" :includeNav="false" :includeXBar="false" extra="180rpx">
+					<swiper id="swiper" ref="swiper" :current="currentTab" style="width:750rpx;flex:1;" @change="onSwiperChange">
+						<swiper-item>
+							<intro-list ref="intro" :parentId="mypListId" :current="currentTab" :index="0"></intro-list>
+						</swiper-item>
+						<swiper-item>
+							<component-list ref="component" :parentId="mypListId" :current="currentTab" :index="1" @page="toPage"></component-list>
+						</swiper-item>
+						<swiper-item>
+							<api-list ref="api" :parentId="mypListId" :current="currentTab" :index="2"></api-list>
+						</swiper-item>
+					</swiper>
+				</myp-content-box>
+			</cell>
+		</list>
+		<!-- #endif -->
+		<!-- #ifndef APP-NVUE -->
+		<scroll-view :scroll-y="mypParentScrollable" :scroll-top="mypParentScrollTop" :scroll-with-animation="true" :style="'width:750rpx;'+mypContentHeightStyle" @scroll="handleParentScroll">
+			<swiper-head></swiper-head>
+			<myp-tabs-h :value="currentTab" :items="tabs" :isTap="true" textLabel="name" activeTextType="primary" width="128rpx" indicatorType="primary" indicatorWidth="64rpx" scrollSize="750rpx" justify="center" @change="toChangeTab"></myp-tabs-h>
+			<myp-content-box :includeStatus="false" :includeNav="false" :includeXBar="false" extra="180rpx">
+				<swiper :current="currentTab" style="width:750rpx;flex:1;" @change="onSwiperChange">
+					<swiper-item>
+						<intro-list :scrollable="mypChildScrollable" :current="currentTab" :index="0" @move="mypChildTouchMove" @end="mypChildTouchEnd"></intro-list>
+					</swiper-item>
+					<swiper-item>
+						<component-list :scrollable="mypChildScrollable" :current="currentTab" :index="1" @move="mypChildTouchMove" @end="mypChildTouchEnd" @page="toPage"></component-list>
+					</swiper-item>
+					<swiper-item>
+						<api-list :scrollable="mypChildScrollable" :current="currentTab" :index="2" @move="mypChildTouchMove" @end="mypChildTouchEnd"></api-list>
+					</swiper-item>
+				</swiper>
+			</myp-content-box>
+		</scroll-view>
+		<!-- #endif -->
+		<view style="height: 100rpx;"></view>
+		<myp-xbar bgType="none"></myp-xbar>
+		<myp-position :fixed="true" boxStyle="left:0;width:750rpx;">
+			<view class="ch-foot-content">
+				<view class="ch-foot-token"></view>
+				<view class="ch-foot-body">
+					<view class="ch-foot-left"></view>
+					<myp-button text="欢迎光临" textType="inverse" bgType="primary" border="none" radius="ll" boxStyle="width:316rpx;height:76rpx;" @buttonClicked="toFootJoin"></myp-button>
+					<view class="ch-foot-right">
+						<myp-icon name="share" size="base" @iconClicked="toShareCircle"></myp-icon>
+						<text class="ch-foot-right-text" @tap.stop="toShareCircle">分享</text>
+					</view>
+				</view>
+				<view class="ch-foot-avatar">
+					<image class="ch-foot-avatar-avatar" src="/static/bear.jpg" mode="aspectFill" @tap.stop.prevent="toFootUser"></image>
+				</view>
+			</view>
+			<myp-xbar bgType="inverse" boxStyle="width:750rpx;"></myp-xbar>
+		</myp-position>
+		<myp-navbar :fixed="true" :isSeize="false" :bgType="titleVisible?'primary':'none'" :title="titleVisible?'欢迎光临':''" iconStyle="color:#FFFFFF;" titleStyle="color:#FFFFFF;" :lefts="leftIcons" @leftAction="navLeftAction"></myp-navbar>
+		<myp-loading ref="myp-loading"></myp-loading>
+		<myp-toast ref="myp-toast"></myp-toast>
+	</view>
+</template>
+
+<script>
+	import swiperHead from './components/swiperHead.vue'
+	import introList from './components/introList.vue'
+	import componentList from './components/componentList.vue'
+	import apiList from './components/apiList.vue'
+	
+	import contentBoxMixin from '@/mypUI/myp-mixin/contentBoxMixin.js'
+	import navHelper from '@/router/navHelper.js'
+	import toastMixin from '@/mypUI/myp-mixin/toastMixin.js'
+	import loadingMixin from '@/mypUI/myp-mixin/loadingMixin.js'
+	
+	import parentMixin from '@/mypUI/myp-list/header/pureHeaderParent.js'
+	import actionsMixin from './mixin/actions.js'
+	
+	export default {
+		components: {
+			swiperHead,
+			introList,
+			componentList,
+			apiList
+		},
+		mixins: [contentBoxMixin, navHelper, toastMixin, loadingMixin, parentMixin, actionsMixin],
+		data() {
+			return {
+				mypExtra: 100,
+				mypIncludeXBar: false,
+				mypIncludeStatus: true,
+				mypIncludeNav: true,
+				currentTab: 0,
+				titleVisible: false,
+				tabs: [
+					{name: '介绍'},{name: '组件'},{name: '接口'}
+				]
+			}
+		},
+		methods: {
+			toPage(name) {
+				this.navigateTo(name)
+			},
+			handleParentScroll(e) {
+				// #ifdef APP-NVUE
+				const offsetY = e.contentOffset.y
+				let pg = -offsetY / this.mypAllHeight
+				// >=1?而android下可能最大处于0.9-0.99之间
+				if (pg >= 0.92) {
+					this.titleVisible = true
+				} else {
+					this.titleVisible = false
+				}
+				// #endif
+				// #ifndef APP-NVUE
+				const scrollTop = e.detail.scrollTop
+				let spg = scrollTop / this.mypAllHeight
+				// H5下也可能处于0.9-0.99之间，而且设置的8px安全距离可能不够
+				if (spg >= 0.98) {
+					this.titleVisible = true
+				} else {
+					this.titleVisible = false
+				}
+				// #endif
+				this.mypHandleParentScroll(e)
+			},
+			toChangeTab(i) {
+				this.toSwitchTab(i)
+			},
+			onSwiperChange(e) {
+				this.toSwitchTab(e.detail.current)
+			},
+			toSwitchTab(i) {
+				// #ifdef APP-NVUE
+				let ref = null
+				if (i === 0) {
+					ref = this.$refs.intro
+				} else if (i === 1) {
+					ref = this.$refs.component
+				} else if (i === 2) {
+					ref = this.$refs.api
+				}
+				this.mypSetScrollRef(ref)
+				// #endif
+				this.currentTab = i
+			},
+			toInitSpecial() {
+				this.toSwitchTab(this.currentTab)
+			}
+		},
+		onReady() {
+			this.mypHeaderHeight = uni.upx2px(442) //去除了status-nav的高度
+			this.mypAllHeight = this.mypHeaderHeight
+			setTimeout(() => {
+				this.toInitSpecial()
+			}, 20)
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import '@/mypUI/mypui.scss';
+	.ch {
+		&-foot {
+			
+			&-content {
+				width: 750rpx;
+				height: 132rpx;
+				position: relative;
+			}
+			&-token {
+				background-color: transparent;
+				height: 32rpx;
+			}
+			&-body {
+				flex-direction: row;
+				height: 100rpx;
+				background-color: #FFFFFF;
+				align-items: center;
+				justify-content: space-between;
+			}
+			&-left {
+				width: 200rpx;
+			}
+			&-right {
+				width: 200rpx;
+				padding-left: 35rpx;
+				flex-direction: row;
+				align-items: center;
+				
+				&-text {
+					margin-left: 10rpx;
+					font-size: 30rpx;
+					line-height: 42rpx;
+					color: $myp-text-color;
+				}
+			}
+			&-avatar {
+				position: absolute;
+				left: 25rpx;
+				top: 0;
+				width: 120rpx;
+				height: 120rpx;
+				overflow: hidden;
+				
+				&-avatar {
+					border-radius: 20rpx;
+					width: 120rpx;
+					height: 120rpx;
+				}
+			}
+		}
+	}
+</style>

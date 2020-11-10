@@ -1,0 +1,303 @@
+<template>
+	<view>
+		<myp-navbar :lefts="leftIcons" title="弹层互动" @leftAction="navLeftAction"></myp-navbar>
+		<myp-list-simple>
+			<myp-list-cell>
+				<pop-cell @pop="toShowPop"></pop-cell>
+				<view style="height: 24rpx;"></view>
+			</myp-list-cell>
+			<myp-list-cell>
+				<toast-cell @toast="toShowToast"></toast-cell>
+				<view style="height: 24rpx;"></view>
+			</myp-list-cell>
+			<myp-list-cell>
+				<action-cell @select="toShowAction"></action-cell>
+				<view style="height: 24rpx;"></view>
+			</myp-list-cell>
+			<myp-list-cell>
+				<modal-cell @modal="toShowModal"></modal-cell>
+				<view style="height: 24rpx;"></view>
+			</myp-list-cell>
+			<myp-list-cell>
+				<overlay-cell @select="toShowOverlay"></overlay-cell>
+				<view style="height: 24rpx;"></view>
+			</myp-list-cell>
+		</myp-list-simple>
+		<myp-position pos="bottom" offset="x-16px" boxStyle="left:32rpx;right:32rpx;">
+			<myp-notice ref="myp-notice" bgType="primary" icon="hint" text="如果不坚持吃饭,是有可能饿死的" indicator="circle-close" radius="ll" :closable="true"></myp-notice>
+		</myp-position>
+		<top-pop :show="topVisible" @cancel="toHidePop" @pay="toShowPay"></top-pop>
+		<top-offset-pop :show="topOffsetVisible" @cancel="toHidePop" @pay="toShowPay"></top-offset-pop>
+		<top-left-pop :show="topLeftVisible" @cancel="toHidePop" @pay="toShowPay"></top-left-pop>
+		<top-right-pop :show="topRightVisible" @cancel="toHidePop" @pay="toShowPay"></top-right-pop>
+		<bottom-pop :show="bottomVisible" @cancel="toHidePop" @pay="toShowPay"></bottom-pop>
+		<bottom-offset-pop :show="bottomOffsetVisible" @cancel="toHidePop" @pay="toShowPay"></bottom-offset-pop>
+		<bottom-left-pop :show="bottomLeftVisible" @cancel="toHidePop" @pay="toShowPay"></bottom-left-pop>
+		<bottom-right-pop :show="bottomRightVisible" @cancel="toHidePop" @pay="toShowPay"></bottom-right-pop>
+		<left-pop :show="leftVisible" @cancel="toHidePop" @pay="toShowPay"></left-pop>
+		<left-offset-pop :show="leftOffsetVisible" @cancel="toHidePop" @pay="toShowPay"></left-offset-pop>
+		<left-top-pop :show="leftTopVisible" @cancel="toHidePop" @pay="toShowPay"></left-top-pop>
+		<left-bottom-pop :show="leftBottomVisible" @cancel="toHidePop" @pay="toShowPay"></left-bottom-pop>
+		<right-pop :show="rightVisible" @cancel="toHidePop" @pay="toShowPay"></right-pop>
+		<right-offset-pop :show="rightOffsetVisible" @cancel="toHidePop" @pay="toShowPay"></right-offset-pop>
+		<right-top-pop :show="rightTopVisible" @cancel="toHidePop" @pay="toShowPay"></right-top-pop>
+		<right-bottom-pop :show="rightBottomVisible" @cancel="toHidePop" @pay="toShowPay"></right-bottom-pop>
+		<center-pop :show="centerVisible" @cancel="toHidePop" @pay="toShowPay"></center-pop>
+		<center-left-pop :show="centerLeftVisible" @cancel="toHidePop" @pay="toShowPay"></center-left-pop>
+		<center-top-pop :show="centerTopVisible" @cancel="toHidePop" @pay="toShowPay"></center-top-pop>
+		<center-right-pop :show="centerRightVisible" @cancel="toHidePop" @pay="toShowPay"></center-right-pop>
+		<center-bottom-pop :show="centerBottomVisible" @cancel="toHidePop" @pay="toShowPay"></center-bottom-pop>
+		<center-scale-pop :show="centerScaleVisible" @cancel="toHidePop" @pay="toShowPay"></center-scale-pop>
+		<action-all :show="actionAllVisible" @cancel="toHidePop" @select="toConfirmAction"></action-all>
+		<action-half :show="actionHalfVisible" @cancel="toHidePop" @select="toConfirmAction"></action-half>
+		<action-cancel :show="actionCancelVisible" @cancel="toHidePop" @select="toConfirmAction"></action-cancel>
+		<myp-notice-dynamic ref="myp-notify"></myp-notice-dynamic>
+		<myp-overlay :show="overlayVisible" @overlayClicked="overlayClicked">
+			<view class="pop-overlay" v-if="overlayOptions.hasBg">
+				<image class="pop-overlay-bg" mode="aspectFill" src="/static/logo.png"></image>
+				<view style="height: 32rpx;"></view>
+				<myp-button border="none" radius="ll" bgType="error" text="点我关闭" textType="inverse" boxStyle="width:420rpx;" @buttonClicked="toHidePop"></myp-button>
+			</view>
+			<view class="pop-overlay" v-if="!overlayOptions.canAutoClose&&!overlayOptions.hasBg">
+				<myp-button border="none" radius="ll" bgType="error" text="点我关闭" textType="inverse" boxStyle="width:420rpx;" @buttonClicked="toHidePop"></myp-button>
+			</view>
+		</myp-overlay>
+		<modal-opacity :show="modalOpacityVisible" @cancel="toHidePop" @confirm="toHidePop"></modal-opacity>
+		<modal-scale :show="modalScaleVisible" @cancel="toHidePop" @confirm="toHidePop"></modal-scale>
+		<modal-top :show="modalTopVisible" @cancel="toHidePop" @confirm="toHidePop"></modal-top>
+		<myp-loading ref="myp-loading"></myp-loading>
+		<myp-toast ref="myp-toast"></myp-toast>
+	</view>
+</template>
+
+<script>
+import popCell from './components/popCell.vue'
+import toastCell from './components/toastCell.vue'
+import actionCell from './components/actionCell.vue'
+import modalCell from './components/modalCell.vue'
+import overlayCell from './components/overlayCell.vue'
+import topPop from './components/topPop.vue'
+import topOffsetPop from './components/topOffsetPop.vue'
+import topLeftPop from './components/topLeftPop.vue'
+import topRightPop from './components/topRightPop.vue'
+import bottomPop from './components/bottomPop.vue'
+import bottomOffsetPop from './components/bottomOffsetPop.vue'
+import bottomLeftPop from './components/bottomLeftPop.vue'
+import bottomRightPop from './components/bottomRightPop.vue'
+import leftPop from './components/leftPop.vue'
+import leftOffsetPop from './components/leftOffsetPop.vue'
+import leftTopPop from './components/leftTopPop.vue'
+import leftBottomPop from './components/leftBottomPop.vue'
+import rightPop from './components/rightPop.vue'
+import rightOffsetPop from './components/rightOffsetPop.vue'
+import rightTopPop from './components/rightTopPop.vue'
+import rightBottomPop from './components/rightBottomPop.vue'
+import centerPop from './components/centerPop.vue'
+import centerLeftPop from './components/centerLeftPop.vue'
+import centerRightPop from './components/centerRightPop.vue'
+import centerTopPop from './components/centerTopPop.vue'
+import centerBottomPop from './components/centerBottomPop.vue'
+import centerScalePop from './components/centerScalePop.vue'
+import actionAll from './components/actionAll.vue'
+import actionHalf from './components/actionHalf.vue'
+import actionCancel from './components/actionCancel.vue'
+import modalOpacity from './components/modalOpacity.vue'
+import modalScale from './components/modalScale.vue'
+import modalTop from './components/modalTop.vue'
+import payPop from './components/payPop.vue'
+
+import contentBoxMixin from '@/mypUI/myp-mixin/contentBoxMixin.js';
+import toastMixin from '@/mypUI/myp-mixin/toastMixin.js'
+import navHelper from '@/router/navHelper.js'
+
+export default {
+	components: {
+		popCell,
+		toastCell,
+		actionCell,
+		modalCell,
+		overlayCell,
+		topPop,
+		topOffsetPop,
+		topLeftPop,
+		topRightPop,
+		bottomPop,
+		bottomOffsetPop,
+		bottomLeftPop,
+		bottomRightPop,
+		leftPop,
+		leftOffsetPop,
+		leftTopPop,
+		leftBottomPop,
+		rightPop,
+		rightOffsetPop,
+		rightTopPop,
+		rightBottomPop,
+		centerPop,
+		centerLeftPop,
+		centerTopPop,
+		centerRightPop,
+		centerBottomPop,
+		centerScalePop,
+		actionAll,
+		actionHalf,
+		actionCancel,
+		modalOpacity,
+		modalScale,
+		modalTop,
+		payPop
+	},
+	mixins: [contentBoxMixin, toastMixin, navHelper],
+	data() {
+		return {
+			topVisible: false,
+			topOffsetVisible: false,
+			topLeftVisible: false,
+			topRightVisible: false,
+			bottomVisible: false,
+			bottomOffsetVisible: false,
+			bottomLeftVisible: false,
+			bottomRightVisible: false,
+			leftVisible: false,
+			leftOffsetVisible: false,
+			leftTopVisible: false,
+			leftBottomVisible: false,
+			rightVisible: false,
+			rightOffsetVisible: false,
+			rightTopVisible: false,
+			rightBottomVisible: false,
+			centerVisible: false,
+			centerLeftVisible: false,
+			centerTopVisible: false,
+			centerRightVisible: false,
+			centerBottomVisible: false,
+			centerScaleVisible: false,
+			actionAllVisible: false,
+			actionHalfVisible: false,
+			actionCancelVisible: false,
+			overlayVisible: false,
+			overlayOptions: {canAutoClose: false, hasBg: false},
+			modalOpacityVisible: false,
+			modalScaleVisible: false,
+			modalTopVisible: false,
+			pickerDateVisible: false,
+			pickerTimeVisible: false,
+			pickerRangeVisible: false,
+			pickerAreaVisible: false,
+			payVisible: false
+		}
+	},
+	methods: {
+		toShowPicker(val) {
+			this[val.name+'Visible'] = true
+		},
+		confirmPicker(val) {
+			this.toHidePop()
+			this.$refs['myp-toast'].show({
+				type: 'success',
+				text: '选择' + val.checkArr.join('-')
+			})
+		},
+		toShowModal(val) {
+			this[val.name+'Visible'] = true
+		},
+		toShowOverlay(val) {
+			this.overlayOptions = val.options
+			setTimeout(()=>{
+				this.overlayVisible = true
+			}, 0)
+		},
+		overlayClicked() {
+			if (this.overlayOptions.canAutoClose) {
+				this.overlayVisible = false
+			}
+		},
+		toShowToast(val) {
+			if (val.name.startsWith('notify')) {
+				this.$refs['myp-notify'].show(val.options)
+			} else if (val.name.startsWith('toast')) {
+				this.$refs['myp-toast'].show(val.options)
+			} else if (val.name.startsWith('notice')) {
+				this.$refs['myp-notice'].show()
+			} else {
+				this.$refs['myp-loading'].show(val.options)
+				setTimeout(()=>{
+					this.$refs['myp-loading'].hide()
+				}, 3000)
+			}
+		},
+		toShowAction(val) {
+			this[val+'Visible'] = true
+		},
+		toShowPop(val) {
+			this[val+'Visible'] = true
+		},
+		toHidePop() {
+			this.topVisible = false
+			this.topOffsetVisible = false
+			this.topLeftVisible = false
+			this.topRightVisible = false
+			this.bottomVisible = false
+			this.bottomOffsetVisible = false
+			this.bottomLeftVisible = false
+			this.bottomRightVisible = false
+			this.leftVisible = false
+			this.leftOffsetVisible = false
+			this.leftTopVisible = false
+			this.leftBottomVisible = false
+			this.rightVisible = false
+			this.rightOffsetVisible = false
+			this.rightTopVisible = false
+			this.rightBottomVisible = false
+			this.centerVisible = false
+			this.centerLeftVisible = false
+			this.centerTopVisible = false
+			this.centerRightVisible = false
+			this.centerBottomVisible = false
+			this.centerScaleVisible = false
+			this.actionAllVisible = false
+			this.actionCancelVisible = false
+			this.actionHalfVisible = false
+			this.overlayVisible = false
+			this.modalOpacityVisible = false
+			this.modalScaleVisible = false
+			this.modalTopVisible = false
+			this.pickerAreaVisible = false
+			this.pickerDateVisible = false
+			this.pickerRangeVisible = false
+			this.pickerTimeVisible = false
+		},
+		toConfirmAction(val) {
+			this.actionAllVisible = false
+			this.actionCancelVisible = false
+			this.actionHalfVisible = false
+			this.$refs['myp-toast'].showToast({type: 'success', text: '选择了'+val, mode: 'big'})
+		},
+		toShowPay() {
+			
+		}
+	}
+};
+</script>
+
+<style lang="scss" scoped>
+@import '@/mypUI/mypui.scss';
+.pop {
+	&-overlay {
+		position: fixed;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		
+		&-bg {
+			width: 200rpx;
+			height: 200rpx;
+			border-radius: 12rpx;
+		}
+	}
+}
+</style>
